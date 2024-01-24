@@ -1,0 +1,8 @@
+name: 'waf tests'
+description: action that runs waf tests
+runs:
+  using: 'docker'
+  image: '../../../tests.Dockerfile'
+branding:
+  icon: 'check-circle'
+  color: 'blue'

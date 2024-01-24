@@ -1,0 +1,23 @@
+tests:
+  - name: invalid host header test 001
+    site: app2.example.com
+    description: blocks a request if the host header does not match a domain in the allowed host list
+    type: true positive
+    request: |
+      GET /foobar HTTP/1.1
+      Host: sample.foo
+      Accept: */*
+      X-Forwarded-For: 192.168.1.10
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12
+      
+       
+    response: |
+      HTTP/1.1 406 Not Acceptable
+    expect:
+      waf_response: 406
+      signals:
+      - type: site.invalid-host-header
+        detector: 65a190f40f6eb201dc0fdd81
+      - type: BLOCKED
+        detector: 65a190f40f6eb201dc0fdd81
+        value: 406

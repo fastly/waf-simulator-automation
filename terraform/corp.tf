@@ -1,0 +1,3 @@
+module "corp" {
+  source = "./corp"
+}

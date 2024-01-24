@@ -1,0 +1,90 @@
+tests:
+  - name: sensitive account api test 001
+    site: app1.example.com
+    rule_id: 63d04576d3b2e101d4f1345d
+    description: tests if request is tagged with site.sensitive-account-api when a request is made to /api/v1/account/update_profile 
+    type: true positive 
+    request: |
+      POST /api/v1/account/update_profile HTTP/1.1
+      Host: app1.example.com
+      Content-Type: application/x-www-form-urlencoded
+      Accept: */*
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12
+      Content-Length: 5
+
+      p=foo
+    response: |
+      HTTP/1.1 200 OK
+    expect:
+      waf_response: 200
+      signals:
+      - type: site.sensitive-account-api
+        detector: 65a190f3e3148001dc71a5ca
+
+  - name: sensitive account api test 002
+    site: app1.example.com
+    rule_id: 63d04576d3b2e101d4f1345d
+    description: tests if request is tagged with site.sensitive-account-api when a request is made to /api/v1/account/delete_profile
+    type: true positive 
+    request: |
+      POST /api/v1/account/delete_profile HTTP/1.1
+      Host: app1.example.com
+      Content-Type: application/x-www-form-urlencoded
+      Accept: */*
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12
+      Content-Length: 5
+      
+      p=foo
+    response: |
+      HTTP/1.1 200 OK
+    expect:
+      waf_response: 200
+      signals:
+      - type: site.sensitive-account-api
+        detector: 65a190f3e3148001dc71a5ca
+
+
+  - name: sensitive account api test 003
+    site: app1.example.com
+    rule_id: 63d04576d3b2e101d4f1345d
+    description: tests if request is tagged with site.sensitive-account-api when a request is made to /api/v1/account/reset_password
+    type: true positive 
+    request: |
+      POST /api/v1/account/reset_password HTTP/1.1
+      Host: app1.example.com
+      Content-Type: application/x-www-form-urlencoded
+      Accept: */*
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12
+      Content-Length: 5
+      
+      p=foo
+    response: |
+      HTTP/1.1 200 OK
+    expect:
+      waf_response: 200
+      signals:
+      - type: site.sensitive-account-api
+        detector: 65a190f3e3148001dc71a5ca
+
+
+  - name: sensitive account api test 004
+    site: app1.example.com
+    rule_id: 63d04576d3b2e101d4f1345d
+    description: tests if request is tagged with site.sensitive-account-api when a request is made to /api/v1/account/reset_api_key
+    type: true positive 
+    request: |
+      POST /api/v1/account/reset_api_key HTTP/1.1
+      Host: sample.foo
+      Content-Type: application/x-www-form-urlencoded
+      Accept: */*
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12
+      Content-Length: 5
+      
+      p=foo
+    response: |
+      HTTP/1.1 200 OK
+    expect:
+      waf_response: 200
+      signals:
+      - type: site.sensitive-account-api
+        detector: 65a190f3e3148001dc71a5ca

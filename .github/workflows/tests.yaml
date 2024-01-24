@@ -1,0 +1,22 @@
+name: waf tests
+on: 
+  push:
+    branches:
+      - main-branch
+    
+jobs:
+  test-rules:
+    name: waf tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: waf simulation tests
+        uses: ./.github/actions/tests
+        env:
+          SIGSCI_CORP: ${{ secrets.SIGSCI_CORP }}
+          SIGSCI_EMAIL: ${{ secrets.SIGSCI_EMAIL }}
+          SIGSCI_TOKEN: ${{ secrets.SIGSCI_TOKEN }}
