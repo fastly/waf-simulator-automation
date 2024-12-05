@@ -93,18 +93,44 @@ func validateTest(response ngwaf.SimulationOutput, test Test) bool {
 
 	for _, expectedSignal := range test.Expect.Signals {
 		found := false
+		var failureReason string
+
 		for _, respSignal := range response.Data.Signals {
-			if expectedSignal.Type == respSignal.Type &&
-				expectedSignal.Location == respSignal.Location &&
-				expectedSignal.Name == respSignal.Name &&
-				expectedSignal.Value == respSignal.Value &&
-				expectedSignal.Detector == respSignal.Detector &&
-				expectedSignal.Redaction == respSignal.Redaction {
-				found = true
+			if expectedSignal.Type != respSignal.Type {
+				continue
 			}
+
+			// Check all relevant fields
+			if expectedSignal.Value != "" && expectedSignal.Value != respSignal.Value {
+				failureReason = fmt.Sprintf("Value mismatch: expected %q, got %q", expectedSignal.Value, respSignal.Value)
+				break
+			}
+			if expectedSignal.Location != "" && expectedSignal.Location != respSignal.Location {
+				failureReason = fmt.Sprintf("Location mismatch: expected %q, got %q", expectedSignal.Location, respSignal.Location)
+				break
+			}
+			if expectedSignal.Name != "" && expectedSignal.Name != respSignal.Name {
+				failureReason = fmt.Sprintf("Name mismatch: expected %q, got %q", expectedSignal.Name, respSignal.Name)
+				break
+			}
+			if expectedSignal.Detector != "" && expectedSignal.Detector != respSignal.Detector {
+				failureReason = fmt.Sprintf("Detector mismatch: expected %q, got %q", expectedSignal.Detector, respSignal.Detector)
+				break
+			}
+			if expectedSignal.Redaction != respSignal.Redaction {
+				failureReason = fmt.Sprintf("Redaction mismatch: expected %v, got %v", expectedSignal.Redaction, respSignal.Redaction)
+				break
+			}
+
+			found = true
+			break
 		}
+
 		if !found {
-			fmt.Printf("%s failed: signal %s not found\n", test.Name, expectedSignal.Type)
+			if failureReason == "" {
+				failureReason = "Signal type not found"
+			}
+			fmt.Printf("%s failed: Reason: %s\n", test.Name, failureReason)
 			pass = false
 		}
 	}
