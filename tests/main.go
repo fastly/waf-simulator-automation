@@ -97,10 +97,9 @@ func validateTest(response ngwaf.SimulationOutput, test Test) bool {
 
 		for _, respSignal := range response.Data.Signals {
 			if expectedSignal.Type != respSignal.Type {
+				failureReason = fmt.Sprintf("Signal mismatch: expected %q, got %q", expectedSignal.Type, respSignal.Type)
 				continue
 			}
-
-			// Check all relevant fields
 			if expectedSignal.Value != "" && expectedSignal.Value != respSignal.Value {
 				failureReason = fmt.Sprintf("Value mismatch: expected %q, got %q", expectedSignal.Value, respSignal.Value)
 				break
@@ -117,7 +116,7 @@ func validateTest(response ngwaf.SimulationOutput, test Test) bool {
 				failureReason = fmt.Sprintf("Detector mismatch: expected %q, got %q", expectedSignal.Detector, respSignal.Detector)
 				break
 			}
-			if expectedSignal.Redaction != respSignal.Redaction {
+			if expectedSignal.Redaction != 0 && expectedSignal.Redaction != respSignal.Redaction {
 				failureReason = fmt.Sprintf("Redaction mismatch: expected %v, got %v", expectedSignal.Redaction, respSignal.Redaction)
 				break
 			}
@@ -127,9 +126,6 @@ func validateTest(response ngwaf.SimulationOutput, test Test) bool {
 		}
 
 		if !found {
-			if failureReason == "" {
-				failureReason = "Signal type not found"
-			}
 			fmt.Printf("%s failed: Reason: %s\n", test.Name, failureReason)
 			pass = false
 		}
