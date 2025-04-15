@@ -5,12 +5,21 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fastly/waf-simulator-automation/ngwaf"
+	sigsci "github.com/signalsciences/go-sigsci"
 	"gopkg.in/yaml.v2"
 )
 
 type Rule struct {
 	Tests []Test `yaml:"tests"`
+}
+
+type Signal struct {
+	Type      string `json:"type"`
+	Location  string `json:"location"`
+	Name      string `json:"name"`
+	Value     string `json:"value"`
+	Detector  string `json:"detector"`
+	Redaction int    `json:"redaction"`
 }
 
 type Test struct {
@@ -21,8 +30,8 @@ type Test struct {
 	Request  string `yaml:"request"`
 	Response string `yaml:"response"`
 	Expect   struct {
-		WafResponse int            `yaml:"waf_response"`
-		Signals     []ngwaf.Signal `yaml:"signals"`
+		WafResponse int      `yaml:"waf_response"`
+		Signals     []Signal `yaml:"signals"`
 	} `yaml:"expect"`
 }
 
@@ -46,21 +55,23 @@ func (r *Rule) getConf(file string) (*Rule, error) {
 }
 
 // tests rules
-func testSimulations(file string, sc *ngwaf.Client) (errCnt int, err error) {
+func testSimulations(file string, sc *sigsci.Client) (errCnt int, err error) {
 	var rule Rule
 	_, err = rule.getConf(file)
 	if err != nil {
 		return errCnt, err
 	}
 
+	corp := os.Getenv("SIGSCI_CORP")
+
 	for _, test := range rule.Tests {
 
-		testBody := ngwaf.Simulation{
+		testBody := sigsci.SimulationBody{
 			SampleRequest:  test.Request,
 			SampleResponse: test.Response,
 		}
 
-		response, err := sc.SimulationTest(testBody, test.Site)
+		response, err := sc.SendSimulation(corp, test.Site, testBody)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -75,7 +86,7 @@ func testSimulations(file string, sc *ngwaf.Client) (errCnt int, err error) {
 }
 
 // validates the simulation output against the expected output
-func validateTest(response ngwaf.SimulationOutput, test Test) bool {
+func validateTest(response sigsci.ResponseSimulationBody, test Test) bool {
 
 	pass := true
 
@@ -86,7 +97,7 @@ func validateTest(response ngwaf.SimulationOutput, test Test) bool {
 	}
 
 	// Create a map for quick lookups
-	responseSignals := make(map[string]ngwaf.Signal)
+	responseSignals := make(map[string]Signal)
 	for _, signal := range response.Data.Signals {
 		responseSignals[signal.Name] = signal
 	}
@@ -166,7 +177,7 @@ func getTestFiles() (files []string, err error) {
 
 func main() {
 
-	fc := ngwaf.NewTokenClient(os.Getenv("SIGSCI_EMAIL"), os.Getenv("SIGSCI_TOKEN"), os.Getenv("SIGSCI_CORP"))
+	fc := sigsci.NewTokenClient(os.Getenv("SIGSCI_EMAIL"), os.Getenv("SIGSCI_TOKEN"))
 
 	files, err := getTestFiles()
 	if err != nil {
@@ -176,7 +187,7 @@ func main() {
 
 	// Check if the files array is empty
 	if len(files) == 0 {
-		panic(fmt.Errorf("No tests found."))
+		panic(fmt.Errorf("no tests found"))
 	}
 
 	errCnt := 0
