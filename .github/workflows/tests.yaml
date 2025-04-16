@@ -25,7 +25,9 @@ jobs:
           go build -o ../waf-tests tests/main.go
 
       - name: waf simulation tests
-        run: ./waf-tests
+        run: |
+          cd waf-simulator
+          ../waf-tests
         env:
           SIGSCI_CORP: ${{ secrets.SIGSCI_CORP }}
           SIGSCI_EMAIL: ${{ secrets.SIGSCI_EMAIL }}
